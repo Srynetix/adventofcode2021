@@ -1,3 +1,8 @@
+use args::Execute;
+
+mod args;
+
 fn main() {
-    println!("Hello, world!");
+    let args: args::Args = argh::from_env();
+    args.execute();
 }
