@@ -12,7 +12,7 @@ pub trait Execute {
 
 /// Advent of Code runner.
 #[derive(FromArgs)]
-pub(crate) struct Args {
+pub struct Args {
     #[argh(subcommand)]
     cmd: Subcommand,
 }
@@ -70,9 +70,7 @@ impl Execute for RunDayCommand {
         }
 
         match self.day {
-            1 => {
-                run_day!("01")
-            }
+            1 => run_day!("01"),
             _ => unreachable!(),
         }
     }

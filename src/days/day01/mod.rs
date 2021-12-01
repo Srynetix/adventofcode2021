@@ -99,10 +99,6 @@ use crate::parse_input;
 pub struct Day01;
 
 impl Day01 {
-    fn get_input(&self) -> Vec<u32> {
-        parse_input!()
-    }
-
     fn count_increments(&self, input: &[u32]) -> usize {
         input
             .windows(2)
@@ -126,18 +122,18 @@ impl Challenge for Day01 {
     }
 
     fn run_ex1(&mut self) -> String {
-        let input = self.get_input();
-        self.count_increments(&input).to_string()
+        self.count_increments(&parse_input!()).to_string()
     }
 
     fn run_ex2(&mut self) -> String {
-        let input = self.get_input();
-        self.count_increments_three(&input).to_string()
+        self.count_increments_three(&parse_input!()).to_string()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::test_day;
+
     use super::*;
 
     const SAMPLE_DATA: [u32; 10] = [199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
@@ -152,13 +148,5 @@ mod tests {
         assert_eq!(Day01::new().count_increments_three(&SAMPLE_DATA), 5);
     }
 
-    #[test]
-    fn test_ex1() {
-        assert_eq!(Day01::new().run_ex1(), "1532");
-    }
-
-    #[test]
-    fn test_ex2() {
-        assert_eq!(Day01::new().run_ex2(), "1571");
-    }
+    test_day!("01", "1532", "1571");
 }

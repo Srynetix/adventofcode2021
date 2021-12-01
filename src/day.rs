@@ -45,3 +45,25 @@ macro_rules! run_day {
         }
     }};
 }
+
+/// Test day.
+#[macro_export]
+macro_rules! test_day {
+    ($day:literal, $ans1:literal, $ans2:literal) => {
+        paste::paste! {
+            use $crate::days::[<day $day>]::[<Day $day>];
+
+            #[test]
+            fn test_ex1() {
+                let mut day = [<Day $day>]::new();
+                assert_eq!(day.run_ex1(), $ans1);
+            }
+
+            #[test]
+            fn test_ex2() {
+                let mut day = [<Day $day>]::new();
+                assert_eq!(day.run_ex2(), $ans2);
+            }
+        }
+    };
+}

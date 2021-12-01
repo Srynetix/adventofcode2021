@@ -1,6 +1,10 @@
 _default:
 	@just --list
 
+# Build
+build:
+    @cargo build
+
 # Format
 fmt:
     @cargo fmt --all
