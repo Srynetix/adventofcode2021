@@ -102,16 +102,12 @@ impl Day01 {
     fn count_increments(&self, input: &[u32]) -> usize {
         input
             .windows(2)
-            .map(|slice| match slice {
-                [one, two] => (two > one) as usize,
-                _ => unreachable!(),
-            })
-            .sum()
+            .flat_map(<&[u32; 2]>::try_from)
+            .fold(0, |acc, [a, b]| acc + (b > a) as usize)
     }
 
     fn count_increments_three(&self, input: &[u32]) -> usize {
         let input: Vec<_> = input.windows(3).map(|slice| slice.iter().sum()).collect();
-
         self.count_increments(&input)
     }
 }
@@ -140,12 +136,14 @@ mod tests {
 
     #[test]
     fn test_count_increments_sample() {
-        assert_eq!(Day01::new().count_increments(&SAMPLE_DATA), 7);
+        let d = Day01::new();
+        assert_eq!(d.count_increments(&SAMPLE_DATA), 7);
     }
 
     #[test]
     fn test_count_increments_three_sample() {
-        assert_eq!(Day01::new().count_increments_three(&SAMPLE_DATA), 5);
+        let d = Day01::new();
+        assert_eq!(d.count_increments_three(&SAMPLE_DATA), 5);
     }
 
     test_day!("01", "1532", "1571");
