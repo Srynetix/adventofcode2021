@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 argh = "0.1.6"
+color-eyre = "0.5.11"
+owo-colors = "3.1.0"
+paste = "1.0.6"
