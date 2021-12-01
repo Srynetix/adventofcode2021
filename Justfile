@@ -1,23 +1,31 @@
 _default:
-	just --list
+	@just --list
 
 # Format
 fmt:
-    cargo fmt --all
+    @cargo fmt --all
 
 # Lint
 lint:
-	cargo fmt --all -- --check
-	cargo clippy --all --tests -- -D warnings
+	@cargo fmt --all -- --check
+	@cargo clippy --all --tests -- -D warnings
 
 # Test
 test:
-	cargo test --all
+	@cargo test --all
 
 # Test with coverage
 test-cov:
-	cargo tarpaulin
+	@cargo tarpaulin
 
 # Generate documentation
 doc:
-	cargo doc --no-deps
+	@cargo doc
+
+# Run one day
+run-day day:
+	@cargo run -q -- run-day {{ day }}
+
+# Run all days
+run-all:
+	@cargo run -q -- run-all
