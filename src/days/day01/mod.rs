@@ -128,9 +128,7 @@ impl Challenge for Day01 {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_day;
-
-    use super::*;
+    use crate::create_day_tests;
 
     const SAMPLE_DATA: [u32; 10] = [199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
 
@@ -146,5 +144,5 @@ mod tests {
         assert_eq!(d.count_increments_three(&SAMPLE_DATA), 5);
     }
 
-    test_day!("01", "1532", "1571");
+    create_day_tests!("01", "1532", "1571");
 }
