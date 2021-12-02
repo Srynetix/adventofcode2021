@@ -61,7 +61,7 @@
 //! After following these new instructions, you would have a horizontal position of 15 and a depth of 60. (Multiplying these produces 900.)
 //!
 //! Using this new interpretation of the commands, calculate the horizontal position and depth you would have after following the planned course. What do you get if you multiply your final horizontal position by your final depth?
-//! 
+//!
 //! Your puzzle answer was 2101031224.
 
 use crate::{day::Challenge, parse_input_str};
