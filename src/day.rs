@@ -32,6 +32,15 @@ macro_rules! parse_input {
     }};
 }
 
+/// Parse input data as string.
+#[macro_export]
+macro_rules! parse_input_str {
+    () => {{
+        let input_data: &str = include_str!("input.txt");
+        input_data.lines().collect::<Vec<_>>()
+    }};
+}
+
 /// Run day.
 #[macro_export]
 macro_rules! run_day {
@@ -46,12 +55,13 @@ macro_rules! run_day {
     }};
 }
 
-/// Test day.
+/// Create day tests.
 #[macro_export]
-macro_rules! test_day {
+macro_rules! create_day_tests {
     ($day:literal, $ans1:literal, $ans2:literal) => {
         paste::paste! {
             use $crate::days::[<day $day>]::[<Day $day>];
+            use $crate::day::Challenge;
 
             #[test]
             fn test_ex1() {

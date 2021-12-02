@@ -59,19 +59,14 @@ struct RunDayCommand {
 
 impl Execute for RunDayCommand {
     fn execute(self) {
-        let implemented_days = 1;
-
         if self.day == 0 || self.day > 25 {
             panic!("You need to choose a day between 1 and 25");
         }
 
-        if self.day > implemented_days {
-            panic!("Code for day {} is unimplemented.", self.day);
-        }
-
         match self.day {
             1 => run_day!("01"),
-            _ => unreachable!(),
+            2 => run_day!("02"),
+            _ => panic!("Day {} is unimplemented.", self.day),
         }
     }
 }
@@ -83,6 +78,7 @@ struct RunAllCommand {}
 
 impl Execute for RunAllCommand {
     fn execute(self) {
-        run_day!("01")
+        run_day!("01");
+        run_day!("02");
     }
 }

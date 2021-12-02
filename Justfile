@@ -24,7 +24,7 @@ test-cov:
 
 # Generate documentation
 doc:
-	@cargo doc
+	@cargo doc --no-deps
 
 # Run one day
 run-day day:
