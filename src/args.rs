@@ -66,6 +66,7 @@ impl Execute for RunDayCommand {
         match self.day {
             1 => run_day!("01"),
             2 => run_day!("02"),
+            3 => run_day!("03"),
             _ => panic!("Day {} is unimplemented.", self.day),
         }
     }
@@ -80,5 +81,6 @@ impl Execute for RunAllCommand {
     fn execute(self) {
         run_day!("01");
         run_day!("02");
+        run_day!("03");
     }
 }
