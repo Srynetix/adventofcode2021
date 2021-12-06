@@ -50,7 +50,22 @@ macro_rules! run_day {
             use owo_colors::OwoColorize;
 
             let mut day = [<Day $day>]::new();
-            println!("📆 {} : 🌓 {} — 🌕 {}", $day.bold().blue(), day.run_ex1().green(), day.run_ex2().green());
+
+            let (d1_output, d1_elapsed) = {
+                let now = std::time::Instant::now();
+                let output = day.run_ex1();
+                (output, now.elapsed().as_millis().to_string())
+            };
+            let (d2_output, d2_elapsed) = {
+                let now = std::time::Instant::now();
+                let output = day.run_ex2();
+                (output, now.elapsed().as_millis().to_string())
+            };
+
+            println!(
+                "📆 {} : 🌓 {} ({}ms) — 🌕 {} ({}ms)",
+                $day.bold().blue(), d1_output.green(), d1_elapsed.yellow(), d2_output.green(), d2_elapsed.yellow()
+            );
         }
     }};
 }
