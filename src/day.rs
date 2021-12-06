@@ -41,6 +41,14 @@ macro_rules! parse_input_str {
     }};
 }
 
+/// Parse input raw.
+#[macro_export]
+macro_rules! parse_input_raw {
+    () => {{
+        include_str!("input.txt")
+    }};
+}
+
 /// Run day.
 #[macro_export]
 macro_rules! run_day {
