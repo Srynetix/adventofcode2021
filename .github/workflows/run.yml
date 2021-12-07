@@ -1,0 +1,20 @@
+name: Run
+
+on:
+  push:
+
+jobs:
+  run:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/prepare
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: run-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - run: just run-all

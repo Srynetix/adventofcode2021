@@ -28,8 +28,8 @@ doc:
 
 # Run one day
 run-day day:
-	@cargo run -q -- run-day {{ day }}
+	@cargo run --release -- run-day {{ day }}
 
 # Run all days
 run-all:
-	@cargo run -q -- run-all
+	@cargo run --release -- run-all
