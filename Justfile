@@ -16,7 +16,7 @@ lint:
 
 # Test
 test:
-	@cargo test --all
+	@cargo test --all --release
 
 # Test with coverage
 test-cov:

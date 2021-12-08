@@ -71,6 +71,7 @@ impl Execute for RunDayCommand {
             5 => run_day!("05"),
             6 => run_day!("06"),
             7 => run_day!("07"),
+            8 => run_day!("08"),
             _ => panic!("Day {} is unimplemented.", self.day),
         }
     }
@@ -90,5 +91,6 @@ impl Execute for RunAllCommand {
         run_day!("05");
         run_day!("06");
         run_day!("07");
+        run_day!("08");
     }
 }
