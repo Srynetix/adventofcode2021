@@ -16,7 +16,11 @@ lint:
 
 # Test
 test:
-	@cargo test --all --release
+	@cargo test --all
+
+# Test
+test-day day:
+	@cargo test --all days::day{{ day }}::tests
 
 # Test with coverage
 test-cov:
