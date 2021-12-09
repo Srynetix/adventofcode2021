@@ -182,10 +182,10 @@ impl SolutionTree {
     }
 }
 
-fn is_digit_valid(solution: &str, next_digit: u8, next_pattern: &str) -> bool {
+fn is_digit_valid(solution: &str, next_digit: u8, next_pattern: &Pattern) -> bool {
     let solution_chars: Vec<char> = solution.chars().collect();
     let positions = get_digit_positions(next_digit);
-    for perm in next_pattern.chars().permutations(next_pattern.len()) {
+    for perm in next_pattern.0.chars().permutations(next_pattern.0.len()) {
         let mut valid = true;
         let mut potential_solution = solution_chars.clone();
         for (idx, v) in perm.iter().enumerate() {
@@ -231,7 +231,9 @@ fn get_digit_from_position(position: &[usize]) -> u8 {
     panic!("Position not found {:?}", position)
 }
 
-fn extract_known_patterns<'a>(patterns: &[&'a str]) -> (Vec<(u8, &'a str)>, Vec<&'a str>) {
+fn extract_known_patterns<'a>(
+    patterns: &[&'a Pattern],
+) -> (Vec<(u8, &'a Pattern)>, Vec<&'a Pattern>) {
     let mut known_patterns = vec![];
     let mut ambiguous_patterns = vec![];
 
@@ -246,12 +248,16 @@ fn extract_known_patterns<'a>(patterns: &[&'a str]) -> (Vec<(u8, &'a str)>, Vec<
     (known_patterns, ambiguous_patterns)
 }
 
-fn find_next_solutions(current_solution: &str, next_digit: u8, next_pattern: &str) -> Vec<String> {
+fn find_next_solutions(
+    current_solution: &str,
+    next_digit: u8,
+    next_pattern: &Pattern,
+) -> Vec<String> {
     let solution_chars: Vec<char> = current_solution.chars().collect();
     let positions = get_digit_positions(next_digit);
     let mut output = vec![];
 
-    for perm in next_pattern.chars().permutations(next_pattern.len()) {
+    for perm in next_pattern.0.chars().permutations(next_pattern.0.len()) {
         let mut valid = true;
         let mut potential_solution = solution_chars.clone();
         for (idx, v) in perm.iter().enumerate() {
@@ -271,7 +277,7 @@ fn find_next_solutions(current_solution: &str, next_digit: u8, next_pattern: &st
     output
 }
 
-fn generate_solution_tree(known_patterns: &[(u8, &str)]) -> SolutionTree {
+fn generate_solution_tree(known_patterns: &[(u8, &Pattern)]) -> SolutionTree {
     let mut init = SolutionTree {
         children: vec![],
         solution: ".......".into(),
@@ -281,7 +287,7 @@ fn generate_solution_tree(known_patterns: &[(u8, &str)]) -> SolutionTree {
     init
 }
 
-fn generate_potential_solutions(known_patterns: &[(u8, &str)]) -> Vec<String> {
+fn generate_potential_solutions(known_patterns: &[(u8, &Pattern)]) -> Vec<String> {
     let tree = generate_solution_tree(known_patterns);
     tree.leaves_at_depth(known_patterns.len() - 1)
         .iter()
@@ -289,7 +295,7 @@ fn generate_potential_solutions(known_patterns: &[(u8, &str)]) -> Vec<String> {
         .collect()
 }
 
-fn generate_known_solution_step(tree: &mut SolutionTree, remaining_patterns: &[(u8, &str)]) {
+fn generate_known_solution_step(tree: &mut SolutionTree, remaining_patterns: &[(u8, &Pattern)]) {
     let (next_digit, next_pattern) = remaining_patterns[0];
     let remaining_patterns = &remaining_patterns[1..];
     let solutions = find_next_solutions(&tree.solution, next_digit, next_pattern);
@@ -308,11 +314,13 @@ fn generate_known_solution_step(tree: &mut SolutionTree, remaining_patterns: &[(
     }
 }
 
-fn generate_ambiguous_possibilities<'a>(remaining_patterns: &[&'a str]) -> Vec<Vec<(u8, &'a str)>> {
-    let sorted_patterns: Vec<&str> = remaining_patterns
+fn generate_ambiguous_possibilities<'a>(
+    remaining_patterns: &[&'a Pattern],
+) -> Vec<Vec<(u8, &'a Pattern)>> {
+    let sorted_patterns: Vec<&Pattern> = remaining_patterns
         .iter()
         .copied()
-        .sorted_by(|a, b| a.len().cmp(&b.len()))
+        .sorted_by(|a, b| a.0.len().cmp(&b.0.len()))
         .collect();
     let mut possibilities = vec![];
 
@@ -376,8 +384,8 @@ fn decode_pattern(solution: &str, pattern: &str) -> u8 {
     get_digit_from_position(&position)
 }
 
-fn guess_digit(pattern: &str) -> Option<u8> {
-    match pattern.len() {
+fn guess_digit(pattern: &Pattern) -> Option<u8> {
+    match pattern.0.len() {
         2 => Some(1),
         3 => Some(7),
         4 => Some(4),
@@ -388,7 +396,7 @@ fn guess_digit(pattern: &str) -> Option<u8> {
 
 fn bruteforce_ambiguous_patterns(
     possible_solutions: &[String],
-    remaining_patterns: Vec<Vec<(u8, &str)>>,
+    remaining_patterns: Vec<Vec<(u8, &Pattern)>>,
 ) -> String {
     for solution in possible_solutions.iter() {
         for remaining_pattern in remaining_patterns.iter() {
@@ -439,11 +447,7 @@ impl PatternLine {
     }
 
     pub fn compute_solution(&self) -> String {
-        let patterns = self
-            .signal_patterns
-            .iter()
-            .map(|x| &x.0[..])
-            .collect::<Vec<_>>();
+        let patterns = self.signal_patterns.iter().collect::<Vec<_>>();
         let (known_patterns, ambiguous_patterns) = extract_known_patterns(&patterns);
         let potential_solutions = generate_potential_solutions(&known_patterns);
         let possibilities = generate_ambiguous_possibilities(&ambiguous_patterns);
@@ -460,7 +464,7 @@ impl PatternLine {
 
 impl From<&str> for Pattern {
     fn from(s: &str) -> Self {
-        Self(s.into())
+        Self(s.chars().sorted().collect())
     }
 }
 
