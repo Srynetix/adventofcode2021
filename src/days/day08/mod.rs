@@ -130,14 +130,16 @@
 //!
 //! Your puzzle answer was 978171.
 
+use std::collections::{BTreeSet, HashMap};
+
 use crate::{day::Challenge, parse_input_str};
 use itertools::Itertools;
+use maplit::btreeset;
+use once_cell::sync::Lazy;
 
 /// Day 08 implementation.
 pub struct Day08;
 
-// Array-based segment solver.
-//
 //  0000
 // 1    2
 // 1    2
@@ -155,258 +157,78 @@ struct PatternLine {
 }
 struct PatternCounter;
 
-#[derive(Debug, Clone)]
-struct SolutionTree {
-    solution: String,
-    children: Vec<SolutionTree>,
-}
+static DIGIT_MAP: Lazy<HashMap<u8, BTreeSet<u8>>> = Lazy::new(|| {
+    let mut map: HashMap<u8, BTreeSet<u8>> = HashMap::new();
+    map.insert(0u8, btreeset! { 0, 1, 2, 4, 5, 6 });
+    map.insert(1u8, btreeset! { 2, 5 });
+    map.insert(2u8, btreeset! { 0, 2, 3, 4, 6 });
+    map.insert(3u8, btreeset! { 0, 2, 3, 5, 6 });
+    map.insert(4u8, btreeset! { 1, 2, 3, 5 });
+    map.insert(5u8, btreeset! { 0, 1, 3, 5, 6 });
+    map.insert(6u8, btreeset! { 0, 1, 3, 4, 5, 6 });
+    map.insert(7u8, btreeset! { 0, 2, 5 });
+    map.insert(8u8, btreeset! { 0, 1, 2, 3, 4, 5, 6 });
+    map.insert(9u8, btreeset! { 0, 1, 2, 3, 5, 6 });
+    map
+});
 
-impl SolutionTree {
-    pub fn leaves_at_depth(&self, depth: usize) -> Vec<&SolutionTree> {
-        Self::leaves_at_depth_rec(0, depth, self)
+static INVERTED_DIGIT_MAP: Lazy<HashMap<BTreeSet<u8>, u8>> = Lazy::new(|| {
+    let mut map: HashMap<BTreeSet<u8>, u8> = HashMap::new();
+    for (k, v) in DIGIT_MAP.iter() {
+        map.insert(v.clone(), *k);
     }
+    map
+});
 
-    fn leaves_at_depth_rec(index: usize, depth: usize, tree: &Self) -> Vec<&SolutionTree> {
-        if index == depth {
-            tree.children.iter().collect()
-        } else {
-            let mut output = vec![];
-            for child in &tree.children {
-                let values = Self::leaves_at_depth_rec(index + 1, depth, child);
-                for value in values {
-                    output.push(value);
-                }
-            }
-            output
-        }
-    }
-}
-
-fn is_digit_valid(solution: &str, next_digit: u8, next_pattern: &str) -> bool {
-    let solution_chars: Vec<char> = solution.chars().collect();
-    let positions = get_digit_positions(next_digit);
-    for perm in next_pattern.chars().permutations(next_pattern.len()) {
-        let mut valid = true;
-        let mut potential_solution = solution_chars.clone();
-        for (idx, v) in perm.iter().enumerate() {
-            let pos = positions[idx];
-            if solution_chars[pos] != '.' && solution_chars[pos] != *v {
-                valid = false;
-            } else {
-                potential_solution[pos] = *v;
-            }
-        }
-
-        if valid {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn get_digit_positions(digit: u8) -> &'static [usize] {
-    match digit {
-        0 => &[0, 1, 2, 4, 5, 6],
-        1 => &[2, 5],
-        2 => &[0, 2, 3, 4, 6],
-        3 => &[0, 2, 3, 5, 6],
-        4 => &[1, 2, 3, 5],
-        5 => &[0, 1, 3, 5, 6],
-        6 => &[0, 1, 3, 4, 5, 6],
-        7 => &[0, 2, 5],
-        8 => &[0, 1, 2, 3, 4, 5, 6],
-        9 => &[0, 1, 2, 3, 5, 6],
-        _ => panic!("Unsupported digit {}", digit),
-    }
-}
-
-fn get_digit_from_position(position: &[usize]) -> u8 {
-    for d in 0..=9 {
-        if get_digit_positions(d) == position {
-            return d;
-        }
-    }
-
-    panic!("Position not found {:?}", position)
-}
-
-fn extract_known_patterns<'a>(patterns: &[&'a str]) -> (Vec<(u8, &'a str)>, Vec<&'a str>) {
-    let mut known_patterns = vec![];
-    let mut ambiguous_patterns = vec![];
-
-    for &pattern in patterns {
-        if let Some(d) = guess_digit(pattern) {
-            known_patterns.push((d, pattern));
-        } else {
-            ambiguous_patterns.push(pattern);
-        }
-    }
-
-    (known_patterns, ambiguous_patterns)
-}
-
-fn find_next_solutions(current_solution: &str, next_digit: u8, next_pattern: &str) -> Vec<String> {
-    let solution_chars: Vec<char> = current_solution.chars().collect();
-    let positions = get_digit_positions(next_digit);
-    let mut output = vec![];
-
-    for perm in next_pattern.chars().permutations(next_pattern.len()) {
-        let mut valid = true;
-        let mut potential_solution = solution_chars.clone();
-        for (idx, v) in perm.iter().enumerate() {
-            let pos = positions[idx];
-            if solution_chars[pos] != '.' && solution_chars[pos] != *v {
-                valid = false;
-            } else {
-                potential_solution[pos] = *v;
-            }
-        }
-
-        if valid {
-            output.push(potential_solution.iter().collect());
-        }
-    }
-
-    output
-}
-
-fn generate_solution_tree(known_patterns: &[(u8, &str)]) -> SolutionTree {
-    let mut init = SolutionTree {
-        children: vec![],
-        solution: ".......".into(),
-    };
-
-    generate_known_solution_step(&mut init, known_patterns);
-    init
-}
-
-fn generate_potential_solutions(known_patterns: &[(u8, &str)]) -> Vec<String> {
-    let tree = generate_solution_tree(known_patterns);
-    tree.leaves_at_depth(known_patterns.len() - 1)
-        .iter()
-        .map(|x| x.solution.clone())
-        .collect()
-}
-
-fn generate_known_solution_step(tree: &mut SolutionTree, remaining_patterns: &[(u8, &str)]) {
-    let (next_digit, next_pattern) = remaining_patterns[0];
-    let remaining_patterns = &remaining_patterns[1..];
-    let solutions = find_next_solutions(&tree.solution, next_digit, next_pattern);
-
-    for solution in solutions {
-        tree.children.push(SolutionTree {
-            children: vec![],
-            solution,
-        });
-    }
-
-    if !remaining_patterns.is_empty() {
-        for child in &mut tree.children {
-            generate_known_solution_step(child, remaining_patterns);
-        }
-    }
-}
-
-fn generate_ambiguous_possibilities<'a>(remaining_patterns: &[&'a str]) -> Vec<Vec<(u8, &'a str)>> {
-    let sorted_patterns: Vec<&str> = remaining_patterns
-        .iter()
-        .copied()
-        .sorted_by(|a, b| a.len().cmp(&b.len()))
-        .collect();
-    let mut possibilities = vec![];
-
-    // First three are 2, 3, 5
-    let first_digits = [2, 3, 5];
-    let first_patterns = &sorted_patterns[..3];
-    // Last three are 0, 6, 9
-    let last_digits = [0, 6, 9];
-    let last_patterns = &sorted_patterns[3..];
-
-    let indexes: [usize; 3] = [0, 1, 2];
-    let mut first_perms = vec![];
-    let mut last_perms = vec![];
-    for perm in indexes.iter().permutations(3) {
-        let mut first_perms_vec = vec![];
-        let mut last_perms_vec = vec![];
-        for (idx, &&i) in perm.iter().enumerate() {
-            let first_digit = first_digits[idx];
-            let first_pattern = first_patterns[i];
-            first_perms_vec.push((first_digit, first_pattern));
-
-            let last_digit = last_digits[idx];
-            let last_pattern = last_patterns[i];
-            last_perms_vec.push((last_digit, last_pattern));
-        }
-
-        first_perms.push(first_perms_vec);
-        last_perms.push(last_perms_vec);
-    }
-
-    // Zip two perm arrays
-    for first_perm_vec in &first_perms {
-        for last_perm_vec in &last_perms {
-            let mut possibility = vec![];
-            for &f in first_perm_vec {
-                possibility.push(f);
-            }
-            for &l in last_perm_vec {
-                possibility.push(l);
-            }
-            possibilities.push(possibility);
-        }
-    }
-
-    possibilities
-}
-
-fn decode_pattern(solution: &str, pattern: &str) -> u8 {
-    // Compute positions
-    let solution_chars = solution.chars().collect::<Vec<char>>();
-    let position = pattern
+static ALL_SOLUTIONS: Lazy<Vec<HashMap<char, u8>>> = Lazy::new(|| {
+    "abcdefg"
         .chars()
+        .permutations(7)
         .map(|x| {
-            solution_chars
-                .iter()
-                .position(|&y| x == y)
-                .expect("Position should be valid")
+            x.into_iter()
+                .enumerate()
+                .map(|(idx, c)| (c, idx as u8))
+                .collect::<HashMap<char, u8>>()
         })
-        .sorted()
-        .collect::<Vec<_>>();
-    get_digit_from_position(&position)
+        .collect()
+});
+
+fn try_match_digit(positions: &BTreeSet<u8>) -> Option<u8> {
+    INVERTED_DIGIT_MAP.get(positions).copied()
 }
 
-fn guess_digit(pattern: &str) -> Option<u8> {
-    match pattern.len() {
-        2 => Some(1),
-        3 => Some(7),
-        4 => Some(4),
-        7 => Some(8),
-        _ => None,
-    }
-}
+fn try_solution<'a>(
+    solution: &HashMap<char, u8>,
+    sorted_input: &[&'a str],
+) -> Option<HashMap<&'a str, u8>> {
+    let mut output = HashMap::new();
 
-fn bruteforce_ambiguous_patterns(
-    possible_solutions: &[String],
-    remaining_patterns: Vec<Vec<(u8, &str)>>,
-) -> String {
-    for solution in possible_solutions.iter() {
-        for remaining_pattern in remaining_patterns.iter() {
-            let mut valid = true;
-            for (digit, pattern) in remaining_pattern {
-                if !is_digit_valid(solution, *digit, pattern) {
-                    valid = false;
-                    break;
-                }
+    for &input in sorted_input {
+        let positions: BTreeSet<_> = input
+            .chars()
+            .map(|x| *solution.get(&x).unwrap())
+            .sorted()
+            .collect();
+        match try_match_digit(&positions) {
+            Some(k) => {
+                output.insert(input, k);
             }
-
-            if valid {
-                return solution.to_string();
-            }
+            None => return None,
         }
     }
 
-    panic!("Could not find solution.")
+    Some(output)
+}
+
+fn find_solution<'a>(input: &[&'a str]) -> HashMap<&'a str, u8> {
+    for solution in ALL_SOLUTIONS.iter() {
+        match try_solution(solution, input) {
+            Some(s) => return s,
+            None => continue,
+        }
+    }
+
+    panic!("Could not find solution");
 }
 
 impl PatternCounter {
@@ -438,29 +260,17 @@ impl PatternLine {
             .count()
     }
 
-    pub fn compute_solution(&self) -> String {
-        let patterns = self
-            .signal_patterns
-            .iter()
-            .map(|x| &x.0[..])
-            .collect::<Vec<_>>();
-        let (known_patterns, ambiguous_patterns) = extract_known_patterns(&patterns);
-        let potential_solutions = generate_potential_solutions(&known_patterns);
-        let possibilities = generate_ambiguous_possibilities(&ambiguous_patterns);
-        bruteforce_ambiguous_patterns(&potential_solutions, possibilities)
-    }
-
-    pub fn decode_output(&self, solution: &str) -> String {
+    pub fn decode_output_with_mapping(&self, mapping: &HashMap<&str, u8>) -> String {
         self.output_patterns
             .iter()
-            .map(|x| decode_pattern(solution, &x.0))
+            .map(|x| mapping.get(&x.0[..]).unwrap())
             .join("")
     }
 }
 
 impl From<&str> for Pattern {
     fn from(s: &str) -> Self {
-        Self(s.into())
+        Self(s.chars().sorted().collect())
     }
 }
 
@@ -501,11 +311,12 @@ impl Challenge for Day08 {
         let lines: Vec<PatternLine> = parse_input_str!().iter().map(|&x| x.into()).collect();
         lines
             .iter()
-            .map(|x| {
-                let solution = x.compute_solution();
-                x.decode_output(&solution)
+            .map(|line| {
+                let input: Vec<_> = line.signal_patterns.iter().map(|x| &x.0[..]).collect();
+                let mapping = find_solution(&input);
+                line.decode_output_with_mapping(&mapping)
                     .parse::<usize>()
-                    .expect("Should be a valid number")
+                    .unwrap()
             })
             .sum::<usize>()
             .to_string()
@@ -514,9 +325,11 @@ impl Challenge for Day08 {
 
 #[cfg(test)]
 mod tests {
+    use maplit::hashmap;
+
     use crate::create_day_tests;
 
-    use super::{PatternCounter, PatternLine};
+    use super::{find_solution, PatternCounter, PatternLine};
 
     create_day_tests!("08", "412", "978171");
 
@@ -554,33 +367,46 @@ mod tests {
     }
 
     #[test]
-    fn test_sample_solving() {
+    fn test_find_solution_sample() {
         let line = PatternLine::from(SAMPLE_DATA);
-        assert_eq!(line.compute_solution(), "deafgbc");
-    }
-
-    #[test]
-    fn test_sample_decoding() {
-        let line = PatternLine::from(SAMPLE_DATA);
-        let solution = "deafgbc";
-        assert_eq!(line.decode_output(solution), "5353");
-    }
-
-    #[test]
-    fn test_larger_sample_decoding() {
-        let outputs = [
-            "8394", "9781", "1197", "9361", "4873", "8418", "4548", "1625", "8717", "4315",
-        ];
-
-        let lines: Vec<PatternLine> = LARGER_SAMPLE_DATA.iter().map(|&x| x.into()).collect();
-        let computed: Vec<_> = lines
+        let input = line
+            .signal_patterns
             .iter()
-            .map(|x| {
-                let solution = x.compute_solution();
-                x.decode_output(&solution)
+            .map(|x| &x.0[..])
+            .collect::<Vec<_>>();
+        let mapping = find_solution(&input);
+        assert_eq!(
+            mapping,
+            hashmap! {
+                "abcdeg" => 0,
+                "ab" => 1,
+                "acdfg" => 2,
+                "abcdf" => 3,
+                "abef" => 4,
+                "bcdef" => 5,
+                "bcdefg" => 6,
+                "abd" => 7,
+                "abcdefg" => 8,
+                "abcdef" => 9,
+            }
+        )
+    }
+
+    #[test]
+    fn test_find_solution_large() {
+        let lines: Vec<PatternLine> = LARGER_SAMPLE_DATA.iter().map(|&x| x.into()).collect();
+        let output: Vec<String> = lines
+            .iter()
+            .map(|line| {
+                let input: Vec<_> = line.signal_patterns.iter().map(|x| &x.0[..]).collect();
+                let mapping = find_solution(&input);
+                line.decode_output_with_mapping(&mapping)
             })
             .collect();
 
-        assert_eq!(computed, outputs);
+        assert_eq!(
+            output,
+            ["8394", "9781", "1197", "9361", "4873", "8418", "4548", "1625", "8717", "4315",]
+        );
     }
 }

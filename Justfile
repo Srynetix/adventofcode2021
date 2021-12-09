@@ -18,7 +18,7 @@ lint:
 test:
 	@cargo test --all
 
-# Test
+# Test day
 test-day day:
 	@cargo test --all days::day{{ day }}::tests
 
