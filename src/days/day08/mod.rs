@@ -180,21 +180,53 @@ static INVERTED_DIGIT_MAP: Lazy<HashMap<BTreeSet<u8>, u8>> = Lazy::new(|| {
     map
 });
 
-static ALL_SOLUTIONS: Lazy<Vec<HashMap<char, u8>>> = Lazy::new(|| {
-    "abcdefg"
-        .chars()
-        .permutations(7)
-        .map(|x| {
-            x.into_iter()
-                .enumerate()
-                .map(|(idx, c)| (c, idx as u8))
-                .collect::<HashMap<char, u8>>()
-        })
-        .collect()
-});
-
 fn try_match_digit(positions: &BTreeSet<u8>) -> Option<u8> {
     INVERTED_DIGIT_MAP.get(positions).copied()
+}
+
+fn generate_initial_solutions(sorted_sets: &[BTreeSet<char>]) -> Vec<HashMap<char, u8>> {
+    // First is a "one", second is a "seven", third is a "four", and last is a "eight".
+    let one_set = &sorted_sets[0];
+    let seven_set = &sorted_sets[1];
+    let four_set = &sorted_sets[2];
+    let eight_set = &sorted_sets[sorted_sets.len() - 1];
+
+    // p0 (top) is 7 - 1
+    // p2 & p5 (top right + bottom right) is 1
+    // p1 & p3 (top left + middle) is 4 - 1
+    // p4 & p6 (bottom left + bottom) is 8 - 4 - 7
+    let p0 = (seven_set - one_set).iter().copied().next().unwrap();
+    let p2n5: Vec<char> = one_set.iter().copied().collect();
+    let p1n3: Vec<char> = (four_set - one_set).iter().copied().collect();
+    let p4n6: Vec<char> = (&(eight_set - four_set) - seven_set)
+        .iter()
+        .copied()
+        .collect();
+
+    // Generate each possible combinations
+    let solutions = vec![
+        vec![p0, p1n3[0], p2n5[0], p1n3[1], p4n6[0], p2n5[1], p4n6[1]],
+        vec![p0, p1n3[0], p2n5[0], p1n3[1], p4n6[1], p2n5[1], p4n6[0]],
+        vec![p0, p1n3[0], p2n5[1], p1n3[1], p4n6[0], p2n5[0], p4n6[1]],
+        vec![p0, p1n3[0], p2n5[1], p1n3[1], p4n6[1], p2n5[0], p4n6[0]],
+        vec![p0, p1n3[1], p2n5[0], p1n3[0], p4n6[0], p2n5[1], p4n6[1]],
+        vec![p0, p1n3[1], p2n5[0], p1n3[0], p4n6[1], p2n5[1], p4n6[0]],
+        vec![p0, p1n3[1], p2n5[1], p1n3[0], p4n6[0], p2n5[0], p4n6[1]],
+        vec![p0, p1n3[1], p2n5[1], p1n3[0], p4n6[1], p2n5[0], p4n6[0]],
+    ];
+
+    solutions
+        .iter()
+        .map(|x| x.iter().enumerate().map(|(a, &b)| (b, a as u8)).collect())
+        .collect()
+}
+
+fn convert_patterns_to_sets(input: &[&str]) -> Vec<BTreeSet<char>> {
+    input
+        .iter()
+        .sorted_by(|&&x, &&y| x.len().cmp(&y.len()))
+        .map(|&x| x.chars().collect())
+        .collect()
 }
 
 fn try_solution<'a>(
@@ -221,8 +253,11 @@ fn try_solution<'a>(
 }
 
 fn find_solution<'a>(input: &[&'a str]) -> HashMap<&'a str, u8> {
-    for solution in ALL_SOLUTIONS.iter() {
-        match try_solution(solution, input) {
+    let sets = convert_patterns_to_sets(input);
+    let solutions = generate_initial_solutions(&sets);
+
+    for solution in solutions {
+        match try_solution(&solution, input) {
             Some(s) => return s,
             None => continue,
         }
