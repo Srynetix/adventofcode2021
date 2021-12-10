@@ -1,7 +1,7 @@
 # Advent Of Code 2021
 
 [![Test](https://github.com/Srynetix/adventofcode2021/actions/workflows/test.yml/badge.svg)](https://github.com/Srynetix/adventofcode2021/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/Srynetix/adventofcode2021/badge.svg?branch=main)](https://coveralls.io/github/Srynetix/adventofcode2021?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/Srynetix/adventofcode2021/badge.svg)](https://coveralls.io/github/Srynetix/adventofcode2021?branch=main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Docs](https://img.shields.io/badge/docs-up--to--date-lightgrey)](https://srynetix.github.io/adventofcode2021/adventofcode2021)
 
