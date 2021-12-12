@@ -160,7 +160,6 @@ impl HeightMap {
     }
 
     fn discover_basin_at_position_rec(&self, position: usize, found: &mut HashSet<usize>) {
-        // let this_value = self.data[position];
         for npos in self.grid_neighbors_position(position) {
             if found.contains(&npos) {
                 continue;

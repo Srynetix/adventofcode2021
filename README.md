@@ -12,6 +12,6 @@
 |Days||Mon|Tue|Wed|Thu|Fri|Sat|Sun|
 |-----|-|---|---|---|---|---|---|---|
 |**1 - 5**||&mdash;|&mdash;|:star::star:|:star::star:|:star::star:|:star::star:|:star::star:|
-|**6 - 12**||:star::star:|:star::star:|:star::star:|:star::star:|:star::star:|:star::star:|**??**|
+|**6 - 12**||:star::star:|:star::star:|:star::star:|:star::star:|:star::star:|:star::star:|:star::star:|
 |**13 - 19**||**??**|**??**|**??**|**??**|**??**|**??**|**??**|
 |**20 - 25**||**??**|**??**|**??**|**??**|**??**|**??**|&mdash;|

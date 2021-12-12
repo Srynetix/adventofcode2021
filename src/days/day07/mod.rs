@@ -96,8 +96,6 @@ impl CrabSwarm {
             };
 
             let local_sum = Self::sum(diff as usize, 1, diff) as i32;
-            // println!("Diff {} -> {}: {} ({})", p, pos, diff, local_sum);
-
             sum += local_sum;
         }
 
