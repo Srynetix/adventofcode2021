@@ -63,20 +63,7 @@ impl Execute for RunDayCommand {
             panic!("You need to choose a day between 1 and 25");
         }
 
-        match self.day {
-            1 => run_day!("01"),
-            2 => run_day!("02"),
-            3 => run_day!("03"),
-            4 => run_day!("04"),
-            5 => run_day!("05"),
-            6 => run_day!("06"),
-            7 => run_day!("07"),
-            8 => run_day!("08"),
-            9 => run_day!("09"),
-            10 => run_day!("10"),
-            11 => run_day!("11"),
-            _ => panic!("Day {} is unimplemented.", self.day),
-        }
+        run_day_number(self.day)
     }
 }
 
@@ -87,16 +74,26 @@ struct RunAllCommand {}
 
 impl Execute for RunAllCommand {
     fn execute(self) {
-        run_day!("01");
-        run_day!("02");
-        run_day!("03");
-        run_day!("04");
-        run_day!("05");
-        run_day!("06");
-        run_day!("07");
-        run_day!("08");
-        run_day!("09");
-        run_day!("10");
-        run_day!("11");
+        for n in 1..=12 {
+            run_day_number(n);
+        }
+    }
+}
+
+fn run_day_number(num: u8) {
+    match num {
+        1 => run_day!("01"),
+        2 => run_day!("02"),
+        3 => run_day!("03"),
+        4 => run_day!("04"),
+        5 => run_day!("05"),
+        6 => run_day!("06"),
+        7 => run_day!("07"),
+        8 => run_day!("08"),
+        9 => run_day!("09"),
+        10 => run_day!("10"),
+        11 => run_day!("11"),
+        12 => run_day!("12"),
+        _ => panic!("Day {} is unimplemented.", num),
     }
 }
