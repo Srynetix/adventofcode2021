@@ -469,9 +469,7 @@ mod tests {
         let path = PathBuf::new().join("debug").join("day12-sample.dot");
         save_graph_to_disk(&graph, &path);
 
-        let paths = graph.find_paths2();
-        println!("{:#?}", paths);
-        assert_eq!(paths.len(), 36);
+        assert_eq!(graph.find_paths2().len(), 36);
     }
 
     #[test]
