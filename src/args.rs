@@ -74,7 +74,7 @@ struct RunAllCommand {}
 
 impl Execute for RunAllCommand {
     fn execute(self) {
-        for n in 1..=12 {
+        for n in 1..=13 {
             run_day_number(n);
         }
     }
@@ -94,6 +94,7 @@ fn run_day_number(num: u8) {
         10 => run_day!("10"),
         11 => run_day!("11"),
         12 => run_day!("12"),
+        13 => run_day!("13"),
         _ => panic!("Day {} is unimplemented.", num),
     }
 }
