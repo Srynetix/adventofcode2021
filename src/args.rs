@@ -95,6 +95,7 @@ fn run_day_number(num: u8) {
         11 => run_day!("11"),
         12 => run_day!("12"),
         13 => run_day!("13"),
+        14 => run_day!("14"),
         _ => panic!("Day {} is unimplemented.", num),
     }
 }
