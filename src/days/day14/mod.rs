@@ -59,10 +59,11 @@
 //! In the above example, the most common element is B (occurring 2192039569602 times) and the least common element is H (occurring 3849876073 times); subtracting these produces 2188189693529.
 //!
 //! Apply 40 steps of pair insertion to the polymer template and find the most and least common elements in the result. What do you get if you take the quantity of the most common element and subtract the quantity of the least common element?
+//!
+//! Your puzzle answer was 4302675529689.
 
 use itertools::{Itertools, MinMaxResult};
-use ixlist::List;
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 
 use crate::{day::Challenge, parse_input_raw};
 
@@ -75,39 +76,58 @@ struct Polymer {
     pairs: HashMap<(char, char), char>,
 }
 
-impl Polymer {
-    pub fn get_pair(&self, c1: char, c2: char) -> Option<char> {
-        self.pairs.get(&(c1, c2)).copied()
-    }
-}
-
-struct PolymerChain<'a> {
+struct PolymerSum<'a> {
     polymer: &'a Polymer,
-    chain: List<char>,
+    pairs_count: HashMap<(char, char), usize>,
+    char_count: HashMap<char, usize>,
 }
 
-impl<'a> PolymerChain<'a> {
+impl<'a> PolymerSum<'a> {
     pub fn new(polymer: &'a Polymer) -> Self {
+        let mut pairs_count: HashMap<(char, char), usize> = HashMap::new();
+        let mut char_count: HashMap<char, usize> = HashMap::new();
+
+        let chars: Vec<_> = polymer.template.chars().collect();
+        for window in chars.windows(2) {
+            let pair = (window[0], window[1]);
+            *pairs_count.entry(pair).or_insert(0) += 1;
+        }
+
+        for c in chars {
+            *char_count.entry(c).or_insert(0) += 1;
+        }
+
         Self {
             polymer,
-            chain: polymer.template.chars().collect(),
+            pairs_count,
+            char_count,
         }
     }
 
     pub fn step(&mut self) {
-        let mut cursor = self.chain.cursor();
-        let mut prev = *cursor.next().unwrap();
+        let mut new_pair_counts = self.pairs_count.clone();
+        let mut new_char_counts = self.char_count.clone();
 
-        while let Some(n) = cursor.next().copied() {
-            if let Some(p) = self.polymer.get_pair(prev, n) {
-                cursor.prev().unwrap();
-                cursor.insert(p);
-                cursor.next().unwrap();
-                cursor.next().unwrap();
+        for (&(p0, p1), &target) in &self.polymer.pairs {
+            let mut found = false;
+            let mut found_value = 0;
+            if let Entry::Occupied(e) = self.pairs_count.entry((p0, p1)) {
+                if *e.get() > 0 {
+                    found_value = *e.get();
+                    *new_pair_counts.entry((p0, p1)).or_insert(0) -= found_value;
+                    found = true;
+                }
             }
 
-            prev = n;
+            if found {
+                *new_pair_counts.entry((p0, target)).or_insert(0) += found_value;
+                *new_pair_counts.entry((target, p1)).or_insert(0) += found_value;
+                *new_char_counts.entry(target).or_insert(0) += found_value;
+            }
         }
+
+        self.char_count = new_char_counts;
+        self.pairs_count = new_pair_counts;
     }
 
     pub fn step_for(&mut self, count: usize) {
@@ -117,18 +137,10 @@ impl<'a> PolymerChain<'a> {
     }
 
     pub fn get_common_score(&self) -> u64 {
-        let s = self.to_string();
-        let counts = s.chars().counts();
-        match counts.iter().minmax_by_key(|(_, &v)| v) {
+        match self.char_count.iter().minmax_by_key(|(_, &c)| c) {
             MinMaxResult::MinMax((_, &min), (_, &max)) => max as u64 - min as u64,
             _ => unreachable!(),
         }
-    }
-}
-
-impl<'a> ToString for PolymerChain<'a> {
-    fn to_string(&self) -> String {
-        self.chain.iter().collect()
     }
 }
 
@@ -159,23 +171,26 @@ impl Challenge for Day14 {
 
     fn run_ex1(&mut self) -> String {
         let polymer = Polymer::from(parse_input_raw!());
-        let mut chain = PolymerChain::new(&polymer);
+        let mut chain = PolymerSum::new(&polymer);
         chain.step_for(10);
         chain.get_common_score().to_string()
     }
 
     fn run_ex2(&mut self) -> String {
-        "".to_string()
+        let polymer = Polymer::from(parse_input_raw!());
+        let mut chain = PolymerSum::new(&polymer);
+        chain.step_for(40);
+        chain.get_common_score().to_string()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::create_day_tests;
+    use crate::{create_day_tests, days::day14::PolymerSum};
 
-    use super::{Polymer, PolymerChain};
+    use super::Polymer;
 
-    create_day_tests!("14", "3284", "");
+    create_day_tests!("14", "3284", "4302675529689");
 
     const SAMPLE_DATA: &str = indoc::indoc! {"
         NNCB
@@ -201,29 +216,16 @@ mod tests {
     #[test]
     fn test_sample() {
         let polymer = Polymer::from(SAMPLE_DATA);
-        let mut chain = PolymerChain::new(&polymer);
-        assert_eq!(chain.to_string(), "NNCB");
-        chain.step();
-        assert_eq!(chain.to_string(), "NCNBCHB");
-        chain.step();
-        assert_eq!(chain.to_string(), "NBCCNBBBCBHCB");
-        chain.step();
-        assert_eq!(chain.to_string(), "NBBBCNCCNBBNBNBBCHBHHBCHB");
-        chain.step();
-        assert_eq!(
-            chain.to_string(),
-            "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"
-        );
-
-        chain.step_for(6);
+        let mut chain = PolymerSum::new(&polymer);
+        chain.step_for(10);
         assert_eq!(chain.get_common_score(), 1588);
     }
 
     #[test]
     fn test_sample_40() {
-        // let polymer = Polymer::from(SAMPLE_DATA);
-        // let mut chain = PolymerChain::new(&polymer);
-        // chain.step_for(40);
-        // assert_eq!(chain.get_common_score(), 2188189693529)
+        let polymer = Polymer::from(SAMPLE_DATA);
+        let mut chain = PolymerSum::new(&polymer);
+        chain.step_for(40);
+        assert_eq!(chain.get_common_score(), 2_188_189_693_529)
     }
 }
