@@ -161,10 +161,7 @@
 //!
 //! Your puzzle answer was 2904.
 
-use std::collections::HashMap;
-
 use itertools::Itertools;
-use owo_colors::OwoColorize;
 use petgraph::{
     algo,
     graph::{DiGraph, NodeIndex},
@@ -182,31 +179,8 @@ struct Cave {
 
 impl Cave {
     pub fn get_lower_risk_path_sum(&self) -> u64 {
-        let (cost, path) = self.get_min_path();
-        self.print_graph(&path);
+        let (cost, _) = self.get_min_path();
         cost
-    }
-
-    pub fn print_graph(&self, path: &[NodeIndex]) {
-        let map = path
-            .iter()
-            .map(|x| (x, &self.graph[*x]))
-            .collect::<HashMap<_, _>>();
-        let width = self.array[0].len() * 5;
-        let mut s = String::new();
-        for (i, _) in self.graph.node_indices().enumerate() {
-            let node = NodeIndex::new(i);
-            let v = &self.graph[node].to_string();
-            if i > 0 && i % width == 0 {
-                s.push('\n');
-            }
-            if map.contains_key(&node) {
-                s.push_str(&v.bold().green().to_string());
-            } else {
-                s.push_str(&v.dimmed().yellow().to_string());
-            }
-        }
-        println!("{}", s);
     }
 
     pub fn get_min_path(&self) -> (u64, Vec<NodeIndex>) {
