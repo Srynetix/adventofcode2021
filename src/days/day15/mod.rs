@@ -158,10 +158,15 @@
 //! The total risk of this path is 315 (the starting position is still never entered, so its risk is not counted).
 //!
 //! Using the full map, what is the lowest total risk of any path from the top left to the bottom right?
+//!
+//! Your puzzle answer was 2904.
+
+use std::collections::HashMap;
 
 use itertools::Itertools;
+use owo_colors::OwoColorize;
 use petgraph::{
-    algo::dijkstra,
+    algo,
     graph::{DiGraph, NodeIndex},
 };
 
@@ -172,47 +177,114 @@ pub struct Day15;
 
 struct Cave {
     array: Vec<Vec<u64>>,
-    graph: DiGraph<u32, u64>,
+    graph: DiGraph<u64, u64>,
 }
 
 impl Cave {
     pub fn get_lower_risk_path_sum(&self) -> u64 {
-        let target: NodeIndex = ((self.graph.node_count() - 1) as u32).into();
-        let map = dijkstra(&self.graph, 0.into(), Some(target), |e| *e.weight());
-        *map.get(&target).unwrap()
+        let (cost, path) = self.get_min_path();
+        self.print_graph(&path);
+        cost
+    }
+
+    pub fn print_graph(&self, path: &[NodeIndex]) {
+        let map = path
+            .iter()
+            .map(|x| (x, &self.graph[*x]))
+            .collect::<HashMap<_, _>>();
+        let width = self.array[0].len() * 5;
+        let mut s = String::new();
+        for (i, _) in self.graph.node_indices().enumerate() {
+            let node = NodeIndex::new(i);
+            let v = &self.graph[node].to_string();
+            if i > 0 && i % width == 0 {
+                s.push('\n');
+            }
+            if map.contains_key(&node) {
+                s.push_str(&v.bold().green().to_string());
+            } else {
+                s.push_str(&v.dimmed().yellow().to_string());
+            }
+        }
+        println!("{}", s);
+    }
+
+    pub fn get_min_path(&self) -> (u64, Vec<NodeIndex>) {
+        let target = NodeIndex::new(self.graph.node_count() - 1);
+        algo::astar(
+            &self.graph,
+            0.into(),
+            |x| x == target,
+            |e| *e.weight(),
+            |_| 0,
+        )
+        .unwrap()
+    }
+
+    fn round_to_1(v: u64) -> u64 {
+        let mut v = v;
+        while v > 9 {
+            v -= 9
+        }
+        v
     }
 
     pub fn create_full_map(&self) -> Self {
         let multiplicator = 5;
-        let width = self.array[0].len() * multiplicator;
-        let height = self.array.len() * multiplicator;
+        let initial_width = self.array[0].len();
+        let initial_height = self.array.len();
+        let width = initial_width * multiplicator;
+        let height = initial_height * multiplicator;
 
-        let mut edges = vec![];
-        for y_copy in 0..multiplicator {
-            for x_copy in 0..multiplicator {
-                // let offset =
+        let compute_offset = |x: usize, y: usize| -> u64 {
+            let offset_x = (x as f32 / initial_width as f32) as u64;
+            let offset_y = (y as f32 / initial_height as f32) as u64;
+            offset_x + offset_y
+        };
 
-                for (y, l) in self.array.iter().enumerate() {
-                    for (x, &v) in l.iter().enumerate() {
-                        let idx = (x + y * width) as u32;
+        let mut node_weights = vec![];
+        let mut edge_weights = vec![];
+        for y in 0..height {
+            for x in 0..width {
+                let idx = (x + y * width) as u32;
+                let v = Self::round_to_1(
+                    self.array[y % initial_height][x % initial_width] + compute_offset(x, y),
+                );
+                node_weights.push((idx, v));
 
-                        if x != width - 1 {
-                            let other_v = l[x + 1];
-                            edges.push((idx, idx + 1, other_v));
-                            edges.push((idx + 1, idx, v));
-                        }
+                if x != width - 1 {
+                    let other_v = Self::round_to_1(
+                        self.array[y % initial_height][(x + 1) % initial_width]
+                            + compute_offset(x + 1, y),
+                    );
+                    edge_weights.push((idx, idx + 1, other_v));
+                    edge_weights.push((idx + 1, idx, v));
+                }
 
-                        if y != height - 1 {
-                            let other_v = self.array[y + 1][x];
-                            edges.push((idx, idx + width as u32, other_v));
-                            edges.push((idx + width as u32, idx, v));
-                        }
-                    }
+                if y != height - 1 {
+                    let other_v = Self::round_to_1(
+                        self.array[(y + 1) % initial_height][x % initial_width]
+                            + compute_offset(x, y + 1),
+                    );
+                    edge_weights.push((idx, idx + width as u32, other_v));
+                    edge_weights.push((idx + width as u32, idx, v));
                 }
             }
         }
 
-        todo!()
+        let mut graph = DiGraph::new();
+        for (_, w) in node_weights {
+            graph.add_node(w);
+        }
+
+        for (e1, e2, w) in edge_weights {
+            graph.update_edge(e1.into(), e2.into(), w);
+        }
+
+        Self {
+            array: self.array.clone(),
+            graph,
+        }
     }
 }
 
@@ -266,7 +338,9 @@ impl Challenge for Day15 {
     }
 
     fn run_ex2(&mut self) -> String {
-        "".to_string()
+        let cave = Cave::from(parse_input_raw!());
+        let cave = cave.create_full_map();
+        cave.get_lower_risk_path_sum().to_string()
     }
 }
 
@@ -276,7 +350,7 @@ mod tests {
 
     use super::Cave;
 
-    create_day_tests!("15", "", "");
+    create_day_tests!("15", "621", "2904");
 
     const SMALL_SAMPLE_DATA: &str = indoc::indoc! {"
         1163
@@ -298,6 +372,19 @@ mod tests {
         2311944581"
     };
 
+    const SAMPLE_DATA_2: &str = indoc::indoc! {"
+        1911191111
+        1119111991
+        9999999111
+        9999911199
+        9999119999
+        9999199999
+        9111199999
+        9199999111
+        9111911191
+        9991119991"
+    };
+
     #[test]
     fn test_small_sample() {
         let cave = Cave::from(SMALL_SAMPLE_DATA);
@@ -308,5 +395,18 @@ mod tests {
     fn test_sample() {
         let cave = Cave::from(SAMPLE_DATA);
         assert_eq!(cave.get_lower_risk_path_sum(), 40);
+    }
+
+    #[test]
+    fn test_sample_2() {
+        let cave = Cave::from(SAMPLE_DATA_2);
+        assert_eq!(cave.get_lower_risk_path_sum(), 40);
+    }
+
+    #[test]
+    fn test_sample_x5() {
+        let cave = Cave::from(SAMPLE_DATA);
+        let cave = cave.create_full_map();
+        assert_eq!(cave.get_lower_risk_path_sum(), 315);
     }
 }
