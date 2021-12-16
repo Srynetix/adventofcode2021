@@ -333,10 +333,6 @@ impl From<&str> for PatternLine {
 }
 
 impl Challenge for Day08 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let lines: Vec<PatternLine> = parse_input_str!().iter().map(|&x| x.into()).collect();
         PatternCounter::count_unambiguous_output_patterns(&lines).to_string()

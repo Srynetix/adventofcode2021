@@ -113,10 +113,6 @@ impl Day01 {
 }
 
 impl Challenge for Day01 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         self.count_increments(&parse_input!()).to_string()
     }
@@ -134,13 +130,13 @@ mod tests {
 
     #[test]
     fn test_count_increments_sample() {
-        let d = Day01::new();
+        let d = Day01;
         assert_eq!(d.count_increments(&SAMPLE_DATA), 7);
     }
 
     #[test]
     fn test_count_increments_three_sample() {
-        let d = Day01::new();
+        let d = Day01;
         assert_eq!(d.count_increments_three(&SAMPLE_DATA), 5);
     }
 

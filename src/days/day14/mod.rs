@@ -165,10 +165,6 @@ impl From<&str> for Polymer {
 }
 
 impl Challenge for Day14 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let polymer = Polymer::from(parse_input_raw!());
         let mut chain = PolymerSum::new(&polymer);

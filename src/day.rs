@@ -15,8 +15,6 @@ where
 
 /// Challenge.
 pub trait Challenge {
-    /// New challenge.
-    fn new() -> Self;
     /// Exercise 1.
     fn run_ex1(&mut self) -> String;
     /// Exercise 2.
@@ -57,7 +55,7 @@ macro_rules! run_day {
             use $crate::days::[<day $day>]::[<Day $day>];
             use owo_colors::OwoColorize;
 
-            let mut day = [<Day $day>]::new();
+            let mut day = [<Day $day>];
 
             let (d1_output, d1_elapsed) = {
                 let now = std::time::Instant::now();
@@ -88,13 +86,13 @@ macro_rules! create_day_tests {
 
             #[test]
             fn test_ex1() {
-                let mut day = [<Day $day>]::new();
+                let mut day = [<Day $day>];
                 assert_eq!(day.run_ex1(), $ans1);
             }
 
             #[test]
             fn test_ex2() {
-                let mut day = [<Day $day>]::new();
+                let mut day = [<Day $day>];
                 assert_eq!(day.run_ex2(), $ans2);
             }
         }

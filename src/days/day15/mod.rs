@@ -302,10 +302,6 @@ impl From<&str> for Cave {
 }
 
 impl Challenge for Day15 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let cave = Cave::from(parse_input_raw!());
         cave.get_lower_risk_path_sum().to_string()

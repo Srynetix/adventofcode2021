@@ -539,10 +539,6 @@ impl From<&str> for Grid {
 }
 
 impl Challenge for Day11 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let mut grid = Grid::from(parse_input_raw!());
         let answer = grid.step_for(100).to_string();

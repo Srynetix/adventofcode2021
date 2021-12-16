@@ -178,10 +178,6 @@ impl LineCollisioner {
 }
 
 impl Challenge for Day05 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let lines = LineParser::parse_lines(&parse_input_str!());
         let lines = LineCollisioner::filter_horizontal_and_vertical(&lines);

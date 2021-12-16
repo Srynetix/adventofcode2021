@@ -122,10 +122,6 @@ impl From<&str> for FishSchool {
 }
 
 impl Challenge for Day06 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let mut school = FishSchool::from(parse_input_raw!());
         school.step_count(80);
