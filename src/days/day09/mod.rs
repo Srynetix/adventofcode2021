@@ -254,10 +254,6 @@ impl From<&str> for HeightMap {
 }
 
 impl Challenge for Day09 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let hm = HeightMap::from(parse_input_raw!());
         let path = PathBuf::new().join("debug").join("day09.png");

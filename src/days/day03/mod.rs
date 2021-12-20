@@ -171,10 +171,6 @@ impl BitAnalyzer {
 }
 
 impl Challenge for Day03 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let (gamma, epsilon) = BitAnalyzer::compute_gamma_and_epsilon(&parse_input_str!());
         (gamma * epsilon).to_string()

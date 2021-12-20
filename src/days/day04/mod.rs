@@ -232,10 +232,6 @@ impl BingoPlayer {
 }
 
 impl Challenge for Day04 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let input = include_str!("input.txt");
         let (play, grids) = BingoParser::parse_play_and_grids(input);

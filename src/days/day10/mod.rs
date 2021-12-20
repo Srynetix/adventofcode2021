@@ -109,10 +109,6 @@ use crate::{day::Challenge, parse_input_str};
 pub struct Day10;
 
 impl Challenge for Day10 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         NavParser::check_errors_on_lines(&parse_input_str!())
             .pipe(|x| NavParser::count_errors_score(&x).to_string())

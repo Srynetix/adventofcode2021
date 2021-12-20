@@ -341,10 +341,6 @@ impl From<&str> for TransparentPaper {
 }
 
 impl Challenge for Day13 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let paper = TransparentPaper::from(parse_input_raw!());
         let paper = paper.fold_next_rule().unwrap();

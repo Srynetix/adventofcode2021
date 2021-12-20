@@ -154,10 +154,6 @@ impl From<&str> for CrabSwarm {
 }
 
 impl Challenge for Day07 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let swarm = CrabSwarm::from(parse_input_raw!());
         let (_pos, sum) = swarm.min_cost_for_alignment();

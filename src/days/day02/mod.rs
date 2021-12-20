@@ -174,10 +174,6 @@ impl Submarine {
 }
 
 impl Challenge for Day02 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         Submarine::from_moves(&parse_input_str!())
             .score()

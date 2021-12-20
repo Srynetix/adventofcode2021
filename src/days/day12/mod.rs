@@ -413,10 +413,6 @@ impl From<&[&str]> for Graph {
 }
 
 impl Challenge for Day12 {
-    fn new() -> Self {
-        Self
-    }
-
     fn run_ex1(&mut self) -> String {
         let graph = Graph::from(&parse_input_str!()[..]);
         let path = PathBuf::new().join("debug").join("day12.dot");
