@@ -87,25 +87,415 @@
 //! A0016C880162017C3686B18A3D4780 is an operator packet that contains an operator packet that contains an operator packet that contains five literal values; it has a version sum of 31.
 //!
 //! Decode the structure of your hexadecimal-encoded BITS transmission; what do you get if you add up the version numbers in all packets?
+//!
+//! Your puzzle answer was 877.
+//!
+//! ## Part Two
+//!
+//! Now that you have the structure of your transmission decoded, you can calculate the value of the expression it represents.
+//!
+//! Literal values (type ID 4) represent a single number as described above. The remaining type IDs are more interesting:
+//!
+//! Packets with type ID 0 are sum packets - their value is the sum of the values of their sub-packets. If they only have a single sub-packet, their value is the value of the sub-packet.
+//! Packets with type ID 1 are product packets - their value is the result of multiplying together the values of their sub-packets. If they only have a single sub-packet, their value is the value of the sub-packet.
+//! Packets with type ID 2 are minimum packets - their value is the minimum of the values of their sub-packets.
+//! Packets with type ID 3 are maximum packets - their value is the maximum of the values of their sub-packets.
+//! Packets with type ID 5 are greater than packets - their value is 1 if the value of the first sub-packet is greater than the value of the second sub-packet; otherwise, their value is 0. These packets always have exactly two sub-packets.
+//! Packets with type ID 6 are less than packets - their value is 1 if the value of the first sub-packet is less than the value of the second sub-packet; otherwise, their value is 0. These packets always have exactly two sub-packets.
+//! Packets with type ID 7 are equal to packets - their value is 1 if the value of the first sub-packet is equal to the value of the second sub-packet; otherwise, their value is 0. These packets always have exactly two sub-packets.
+//! Using these rules, you can now work out the value of the outermost packet in your BITS transmission.
+//!
+//! For example:
+//!
+//! C200B40A82 finds the sum of 1 and 2, resulting in the value 3.
+//! 04005AC33890 finds the product of 6 and 9, resulting in the value 54.
+//! 880086C3E88112 finds the minimum of 7, 8, and 9, resulting in the value 7.
+//! CE00C43D881120 finds the maximum of 7, 8, and 9, resulting in the value 9.
+//! D8005AC2A8F0 produces 1, because 5 is less than 15.
+//! F600BC2D8F produces 0, because 5 is not greater than 15.
+//! 9C005AC2F8F0 produces 0, because 5 is not equal to 15.
+//! 9C0141080250320F1802104A08 produces 1, because 1 + 3 = 2 * 2.
+//!
+//! What do you get if you evaluate the expression represented by your hexadecimal-encoded BITS transmission?
+//!
+//! Your puzzle answer was 194435634456.
 
-use crate::day::Challenge;
+use itertools::Itertools;
+use tap::Pipe;
+
+use crate::{day::Challenge, parse_input_raw};
 
 /// Day 16 implementation.
 pub struct Day16;
 
 impl Challenge for Day16 {
     fn run_ex1(&mut self) -> String {
-        "".to_string()
+        let mut bin = BinUtils::bin_from_hex_string(parse_input_raw!());
+        Packet::from_bin(&mut bin).get_version_sum().to_string()
     }
 
     fn run_ex2(&mut self) -> String {
-        "".to_string()
+        let mut bin = BinUtils::bin_from_hex_string(parse_input_raw!());
+        Packet::from_bin(&mut bin).get_value().to_string()
+    }
+}
+
+struct BinUtils;
+
+impl BinUtils {
+    pub fn slice_to_bin_str(slice: &[u8]) -> String {
+        slice.iter().join("")
+    }
+
+    pub fn str_to_bin_num(s: &str) -> u64 {
+        u64::from_str_radix(s, 2).unwrap()
+    }
+
+    pub fn slice_to_bin_num(slice: &[u8]) -> u64 {
+        Self::str_to_bin_num(&Self::slice_to_bin_str(slice))
+    }
+
+    pub fn bin_from_hex_string(hex_str: &str) -> Vec<u8> {
+        hex_str
+            .chars()
+            .map(|x| format!("{:04b}", x.to_digit(16).unwrap()))
+            .join("")
+            .chars()
+            .map(|x| x.to_digit(2).unwrap() as u8)
+            .collect::<Vec<_>>()
+    }
+
+    pub fn bin_to_u8(s: &[u8]) -> u8 {
+        s.iter()
+            .join("")
+            .pipe(|s| u8::from_str_radix(&s, 2).unwrap())
+    }
+}
+
+#[derive(PartialEq, Debug)]
+struct Packet {
+    version: u8,
+    packet_type: PacketType,
+}
+
+#[derive(PartialEq, Debug)]
+enum PacketType {
+    Literal(u64),
+    Operator(OperatorPacket),
+}
+
+#[derive(PartialEq, Debug)]
+struct OperatorPacket {
+    operator_type: OperatorType,
+    length_type: OperatorLengthType,
+    subpackets: Vec<Packet>,
+}
+
+#[derive(PartialEq, Debug)]
+enum OperatorType {
+    Sum,
+    Product,
+    Minimum,
+    Maximum,
+    GreaterThan,
+    LessThan,
+    EqualTo,
+}
+
+impl OperatorType {
+    fn from_type_id(type_id: u8) -> Self {
+        match type_id {
+            0 => Self::Sum,
+            1 => Self::Product,
+            2 => Self::Minimum,
+            3 => Self::Maximum,
+            5 => Self::GreaterThan,
+            6 => Self::LessThan,
+            7 => Self::EqualTo,
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
+enum OperatorLengthType {
+    TotalLength(u64),
+    SubPacketsNumber(u64),
+}
+
+impl OperatorPacket {
+    pub fn from_bin(type_id: u8, length_type_id: u8, bin_str: &mut Vec<u8>) -> Self {
+        let length_type = match length_type_id {
+            0 => {
+                // Total length on 15 bits
+                let length = bin_str.drain(..15).collect_vec();
+                OperatorLengthType::TotalLength(BinUtils::slice_to_bin_num(&length))
+            }
+            _ => {
+                // Subpackets count on 11 bits
+                let count = bin_str.drain(..11).collect_vec();
+                OperatorLengthType::SubPacketsNumber(BinUtils::slice_to_bin_num(&count))
+            }
+        };
+
+        let subpackets = Self::parse_subpackets(&length_type, bin_str);
+
+        Self {
+            operator_type: OperatorType::from_type_id(type_id),
+            length_type,
+            subpackets,
+        }
+    }
+
+    fn parse_subpackets(length_type: &OperatorLengthType, bin_str: &mut Vec<u8>) -> Vec<Packet> {
+        match length_type {
+            OperatorLengthType::TotalLength(l) => {
+                Packet::from_bin_with_length(bin_str, *l as usize)
+            }
+            OperatorLengthType::SubPacketsNumber(n) => {
+                Packet::from_bin_with_count(bin_str, *n as usize)
+            }
+        }
+    }
+}
+
+impl PacketType {
+    pub fn from_bin(packet_type_id: u8, bin_str: &mut Vec<u8>) -> Self {
+        match packet_type_id {
+            4 => {
+                let mut bin_num = String::new();
+                loop {
+                    let chunk = bin_str.drain(..5).collect_vec();
+                    if chunk[0] == 1 {
+                        bin_num.push_str(&BinUtils::slice_to_bin_str(&chunk[1..]));
+                    } else if chunk[0] == 0 {
+                        bin_num.push_str(&BinUtils::slice_to_bin_str(&chunk[1..]));
+                        break;
+                    }
+                }
+
+                PacketType::Literal(BinUtils::str_to_bin_num(&bin_num))
+            }
+            o => {
+                let length_mode = bin_str.remove(0);
+                PacketType::Operator(OperatorPacket::from_bin(o, length_mode, bin_str))
+            }
+        }
+    }
+}
+
+impl Packet {
+    pub fn from_bin(bin_str: &mut Vec<u8>) -> Self {
+        let version = bin_str
+            .drain(..3)
+            .collect_vec()
+            .pipe(|x| BinUtils::bin_to_u8(&x));
+        let packet_type_id = bin_str
+            .drain(..3)
+            .collect_vec()
+            .pipe(|x| BinUtils::bin_to_u8(&x));
+        let packet_type = PacketType::from_bin(packet_type_id, bin_str);
+
+        Self {
+            version,
+            packet_type,
+        }
+    }
+
+    pub fn from_bin_with_count(bin_str: &mut Vec<u8>, packet_count: usize) -> Vec<Self> {
+        let mut output = vec![];
+
+        for _ in 0..packet_count {
+            output.push(Self::from_bin(bin_str));
+        }
+
+        output
+    }
+
+    pub fn from_bin_with_length(bin_str: &mut Vec<u8>, total_length: usize) -> Vec<Self> {
+        let mut output = vec![];
+
+        let mut read = 0;
+        let mut prev_len = bin_str.len();
+
+        while read < total_length {
+            output.push(Self::from_bin(bin_str));
+
+            let new_len = bin_str.len();
+            read += prev_len - new_len;
+            prev_len = new_len;
+        }
+
+        output
+    }
+
+    pub fn get_version_sum(&self) -> usize {
+        match &self.packet_type {
+            PacketType::Literal(_) => self.version as usize,
+            PacketType::Operator(p) => {
+                p.subpackets
+                    .iter()
+                    .map(|x| x.get_version_sum())
+                    .sum::<usize>()
+                    + self.version as usize
+            }
+        }
+    }
+
+    pub fn get_value(&self) -> usize {
+        match &self.packet_type {
+            PacketType::Literal(l) => *l as usize,
+            PacketType::Operator(o) => {
+                let subpackets_values = o.subpackets.iter().map(|x| x.get_value()).collect_vec();
+                match o.operator_type {
+                    OperatorType::Sum => subpackets_values.iter().sum(),
+                    OperatorType::Product => subpackets_values.iter().product(),
+                    OperatorType::Minimum => subpackets_values.iter().min().copied().unwrap(),
+                    OperatorType::Maximum => subpackets_values.iter().max().copied().unwrap(),
+                    OperatorType::GreaterThan => {
+                        if subpackets_values[0] > subpackets_values[1] {
+                            1
+                        } else {
+                            0
+                        }
+                    }
+                    OperatorType::LessThan => {
+                        if subpackets_values[0] < subpackets_values[1] {
+                            1
+                        } else {
+                            0
+                        }
+                    }
+                    OperatorType::EqualTo => {
+                        if subpackets_values[0] == subpackets_values[1] {
+                            1
+                        } else {
+                            0
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::create_day_tests;
+    use itertools::Itertools;
+    use tap::Pipe;
 
-    create_day_tests!("16", "", "");
+    use crate::{
+        create_day_tests,
+        days::day16::{BinUtils, OperatorLengthType, OperatorPacket, OperatorType, PacketType},
+    };
+
+    use super::Packet;
+
+    create_day_tests!("16", "877", "194435634456");
+
+    fn to_bin_str(vec: &[u8]) -> String {
+        vec.iter().join("")
+    }
+
+    #[test]
+    fn test_bin_from_hex_string() {
+        let bin = BinUtils::bin_from_hex_string("D2FE28");
+        assert_eq!((&bin[..]).pipe(to_bin_str), "110100101111111000101000");
+    }
+
+    #[test]
+    fn test_from_bin() {
+        let mut bin = BinUtils::bin_from_hex_string("D2FE28");
+        assert_eq!(
+            Packet::from_bin(&mut bin),
+            Packet {
+                version: 6,
+                packet_type: PacketType::Literal(2021)
+            }
+        );
+    }
+
+    #[test]
+    fn test_operator_1() {
+        let mut bin = BinUtils::bin_from_hex_string("38006F45291200");
+        assert_eq!(
+            Packet::from_bin(&mut bin),
+            Packet {
+                version: 1,
+                packet_type: PacketType::Operator(OperatorPacket {
+                    operator_type: OperatorType::LessThan,
+                    length_type: OperatorLengthType::TotalLength(27),
+                    subpackets: vec![
+                        Packet {
+                            version: 6,
+                            packet_type: PacketType::Literal(10)
+                        },
+                        Packet {
+                            version: 2,
+                            packet_type: PacketType::Literal(20)
+                        }
+                    ]
+                })
+            }
+        )
+    }
+
+    #[test]
+    fn test_operator_2() {
+        let mut bin = BinUtils::bin_from_hex_string("EE00D40C823060");
+        assert_eq!(
+            Packet::from_bin(&mut bin),
+            Packet {
+                version: 7,
+                packet_type: PacketType::Operator(OperatorPacket {
+                    operator_type: OperatorType::Maximum,
+                    length_type: OperatorLengthType::SubPacketsNumber(3),
+                    subpackets: vec![
+                        Packet {
+                            version: 2,
+                            packet_type: PacketType::Literal(1)
+                        },
+                        Packet {
+                            version: 4,
+                            packet_type: PacketType::Literal(2)
+                        },
+                        Packet {
+                            version: 1,
+                            packet_type: PacketType::Literal(3)
+                        }
+                    ]
+                })
+            }
+        )
+    }
+
+    #[test]
+    fn test_version_sum() {
+        fn test(hex_str: &str, target: usize) {
+            let mut bin = BinUtils::bin_from_hex_string(hex_str);
+            assert_eq!(Packet::from_bin(&mut bin).get_version_sum(), target);
+        }
+
+        test("8A004A801A8002F478", 16);
+        test("620080001611562C8802118E34", 12);
+        test("C0015000016115A2E0802F182340", 23);
+        test("A0016C880162017C3686B18A3D4780", 31);
+    }
+
+    #[test]
+    fn test_get_value() {
+        fn test(hex_str: &str, target: usize) {
+            let mut bin = BinUtils::bin_from_hex_string(hex_str);
+            assert_eq!(Packet::from_bin(&mut bin).get_value(), target);
+        }
+
+        test("C200B40A82", 3);
+        test("04005AC33890", 54);
+        test("880086C3E88112", 7);
+        test("CE00C43D881120", 9);
+        test("D8005AC2A8F0", 1);
+        test("F600BC2D8F", 0);
+        test("9C005AC2F8F0", 0);
+        test("9C0141080250320F1802104A08", 1);
+    }
 }
