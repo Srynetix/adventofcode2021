@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Day05","Day 05 implementation."],["LineCollisioner",""],["LineI32",""],["LineParser",""],["PointI32",""]]});

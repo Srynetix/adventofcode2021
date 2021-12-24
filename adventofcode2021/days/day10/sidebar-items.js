@@ -1,0 +1,1 @@
+initSidebarItems({"static":[["INVERTED_TOKEN_MAP",""],["TOKEN_AUTOCOMPLETE_VALUE",""],["TOKEN_ERROR_VALUE",""],["TOKEN_MAP",""]],"struct":[["Day10","Day 10 implementation."],["NavParser",""]]});

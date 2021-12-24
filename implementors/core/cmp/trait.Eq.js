@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["adventofcode2021"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.56.1/core/cmp/trait.Eq.html\" title=\"trait core::cmp::Eq\">Eq</a> for <a class=\"struct\" href=\"adventofcode2021/days/day05/struct.PointI32.html\" title=\"struct adventofcode2021::days::day05::PointI32\">PointI32</a>","synthetic":false,"types":["adventofcode2021::days::day05::PointI32"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

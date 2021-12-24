@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["save_grid_to_disk",""],["state_to_color",""]],"struct":[["Day11","Day 11 implementation."],["Grid",""]]});

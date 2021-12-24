@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Day06","Day 06 implementation."],["FishSchool",""]]});

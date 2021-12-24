@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["adventofcode2021"] = [{"text":"impl TopLevelCommand for <a class=\"struct\" href=\"adventofcode2021/args/struct.Args.html\" title=\"struct adventofcode2021::args::Args\">Args</a>","synthetic":false,"types":["adventofcode2021::args::Args"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

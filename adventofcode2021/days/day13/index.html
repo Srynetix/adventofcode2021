@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Day 13: Transparent Origami"><meta name="keywords" content="rust, rustlang, rust-lang, day13"><title>adventofcode2021::days::day13 - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../adventofcode2021/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a><h2 class="location">Module day13</h2><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><div id="sidebar-vars" data-name="day13" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Module <a href="../../index.html">adventofcode2021</a>::<wbr><a href="../index.html">days</a>::<wbr><a class="mod" href="#">day13</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../../src/adventofcode2021/days/day13/mod.rs.html#1-461" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h1 id="day-13-transparent-origami" class="section-header"><a href="#day-13-transparent-origami">Day 13: Transparent Origami</a></h1>
+<p>You reach another volcanically active part of the cave. It would be nice if you could do some kind of thermal imaging so you could tell ahead of time which caves are too hot to safely enter.</p>
+<p>Fortunately, the submarine seems to be equipped with a thermal camera! When you activate it, you are greeted with:</p>
+<p>Congratulations on your purchase! To activate this infrared thermal imaging
+camera system, please enter the code found on page 1 of the manual.
+Apparently, the Elves have never used this feature. To your surprise, you manage to find the manual; as you go to open it, page 1 falls out. It’s a large sheet of transparent paper! The transparent paper is marked with random dots and includes instructions on how to fold it up (your puzzle input). For example:</p>
+<p>6,10
+0,14
+9,10
+0,3
+10,4
+4,11
+6,0
+6,12
+4,1
+0,13
+10,12
+3,4
+3,0
+8,4
+1,10
+2,14
+8,10
+9,0</p>
+<p>fold along y=7
+fold along x=5</p>
+<p>The first section is a list of dots on the transparent paper. 0,0 represents the top-left coordinate. The first value, x, increases to the right. The second value, y, increases downward. So, the coordinate 3,0 is to the right of 0,0, and the coordinate 0,7 is below 0,0. The coordinates in this example form the following pattern, where # is a dot on the paper and . is an empty, unmarked position:</p>
+<p>…#..#..#.
+….#……
+………..
+#……….
+…#….#.#
+………..
+………..
+………..
+………..
+………..
+.#….#.##.
+….#……
+……#…#
+#……….
+#.#……..</p>
+<p>Then, there is a list of fold instructions. Each instruction indicates a line on the transparent paper and wants you to fold the paper up (for horizontal y=… lines) or left (for vertical x=… lines). In this example, the first fold instruction is fold along y=7, which designates the line formed by all of the positions where y is 7 (marked here with -):</p>
+<h2 id="" class="section-header"><a href="#">…#..#..#.
+….#……
+………..
+#……….
+…#….#.#
+………..
+………..</a></h2>
+<p>………..
+………..
+.#….#.##.
+….#……
+……#…#
+#……….
+#.#……..</p>
+<p>Because this is a horizontal line, fold the bottom half up. Some of the dots might end up overlapping after the fold is complete, but dots will never appear exactly on a fold line. The result of doing this fold looks like this:</p>
+<p>#.##..#..#.
+#…#……
+……#…#
+#…#……
+.#.#..#.###
+………..
+………..</p>
+<p>Now, only 17 dots are visible.</p>
+<p>Notice, for example, the two dots in the bottom left corner before the transparent paper is folded; after the fold is complete, those dots appear in the top left corner (at 0,0 and 0,1). Because the paper is transparent, the dot just below them in the result (at 0,3) remains visible, as it can be seen through the transparent paper.</p>
+<p>Also notice that some dots can end up overlapping; in this case, the dots merge together and become a single dot.</p>
+<p>The second fold instruction is fold along x=5, which indicates this line:</p>
+<p>#.##.|#..#.
+#…#|…..
+…..|#…#
+#…#|…..
+.#.#.|#.###
+…..|…..
+…..|…..</p>
+<p>Because this is a vertical line, fold left:</p>
+<h5 id="-1" class="section-header"><a href="#-1"></a></h5>
+<p>#…#
+#…#
+#…#</p>
+<h5 id="-2" class="section-header"><a href="#-2"></a></h5>
+<p>…..
+…..</p>
+<p>The instructions made a square!</p>
+<p>The transparent paper is pretty big, so for now, focus on just completing the first fold. After the first fold in the example above, 17 dots are visible - dots that end up overlapping after the fold is completed count as a single dot.</p>
+<p>How many dots are visible after completing just the first fold instruction on your transparent paper?</p>
+<p>Your puzzle answer was 655.</p>
+<h2 id="part-two" class="section-header"><a href="#part-two">Part Two</a></h2>
+<p>Finish folding the transparent paper according to the instructions. The manual says the code is always eight capital letters.</p>
+<p>What code do you use to activate the infrared thermal imaging camera system?</p>
+<p>Your puzzle answer was JPZCUAUR.</p>
+</div></details><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="struct" href="struct.Day13.html" title="adventofcode2021::days::day13::Day13 struct">Day13</a></div><div class="item-right docblock-short"><p>Day 13 implementation.</p>
+</div><div class="item-left module-item"><a class="struct" href="struct.FoldingRule.html" title="adventofcode2021::days::day13::FoldingRule struct">FoldingRule</a></div><div class="item-right docblock-short"></div><div class="item-left module-item"><a class="struct" href="struct.TransparentPaper.html" title="adventofcode2021::days::day13::TransparentPaper struct">TransparentPaper</a></div><div class="item-right docblock-short"></div></div><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="enum" href="enum.Coordinate.html" title="adventofcode2021::days::day13::Coordinate enum">Coordinate</a></div><div class="item-right docblock-short"></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.save_paper_to_disk.html" title="adventofcode2021::days::day13::save_paper_to_disk fn">save_paper_to_disk</a></div><div class="item-right docblock-short"></div><div class="item-left module-item"><a class="fn" href="fn.state_to_color.html" title="adventofcode2021::days::day13::state_to_color fn">state_to_color</a></div><div class="item-right docblock-short"></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="adventofcode2021" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
+    <script src="../../../main.js"></script>
+</body></html>

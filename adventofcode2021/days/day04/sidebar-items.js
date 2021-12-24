@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BingoGrid",""],["BingoParser",""],["BingoPlay",""],["BingoPlayer",""],["Day04","Day 04 implementation."]]});

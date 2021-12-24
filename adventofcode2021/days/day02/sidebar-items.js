@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["MoveDirection",""]],"struct":[["Day02","Day 02 implementation."],["Move",""],["Submarine",""]]});

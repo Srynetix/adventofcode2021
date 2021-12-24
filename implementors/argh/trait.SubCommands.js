@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["adventofcode2021"] = [{"text":"impl SubCommands for <a class=\"enum\" href=\"adventofcode2021/args/enum.Subcommand.html\" title=\"enum adventofcode2021::args::Subcommand\">Subcommand</a>","synthetic":false,"types":["adventofcode2021::args::Subcommand"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

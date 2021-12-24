@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Subcommand",""]],"fn":[["run_day_number",""]],"struct":[["Args","Advent of Code runner."],["RunAllCommand","run all days."],["RunDayCommand","run day."]],"trait":[["Execute","Execute."]]});

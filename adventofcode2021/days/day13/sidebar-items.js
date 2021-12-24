@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Coordinate",""]],"fn":[["save_paper_to_disk",""],["state_to_color",""]],"struct":[["Day13","Day 13 implementation."],["FoldingRule",""],["TransparentPaper",""]]});

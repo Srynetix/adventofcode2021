@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["main",""]],"macro":[["create_day_tests","Create day tests."],["parse_input","Parse input data."],["parse_input_raw","Parse input raw."],["parse_input_str","Parse input data as string."],["run_day","Run day."]],"mod":[["args","Argument handling."],["day","Day common utils."],["days","Days."]]});
